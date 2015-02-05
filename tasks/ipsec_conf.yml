@@ -1,0 +1,15 @@
+---
+
+- name: ipsec_conf | set /etc/ipsec.conf
+  template:
+    src=ipsec.conf.j2
+    dest=/etc/ipsec.conf
+    owner=root
+  notify: restart openswan
+
+- name: ipsec_conf | set /etc/ipsec.secrets
+  template:
+    src=ipsec.secrets.J2
+    dest=/etc/ipsec.secrets
+    owner=root
+  notify: restart openswan

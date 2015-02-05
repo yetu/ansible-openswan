@@ -1,0 +1,34 @@
+version 2.0
+config setup
+    nat_traversal={{ openswan_nat_traversal }}
+    oe=off
+    dumpdir=/var/run/pluto/
+    protostack=netkey
+    virtual_private={% for range in openswan_virtual_private -%}
+%v{{ range.v}}:{{ range.network }}{{ ',' if loop.index < openswan_virtual_private | length else "" }}{%- endfor %}
+
+
+conn L2TP-PSK-NAT
+    also=L2TP-PSK-noNAT
+    rightsubnet=vhost:%priv
+
+conn L2TP-PSK-noNAT
+    authby=secret
+    auto=add
+    ikelifetime=8h
+    keyingtries=3
+    keylife=1h
+    pfs=no
+    rekey=yes
+    type=transport
+    left={{ openswan_public_address }}
+    leftprotoport=17/1701
+    right=%any
+    rightprotoport=17/%any
+
+########################
+## Public IP to use with VPN : {{ openswan_public_address }}
+## Subnets that will be routed
+{% for range in openswan_virtual_private %}
+#  - IPv{{ range.v}} : {{ range.network }} : {{ range.name if  range.name is defined else ""}}
+{% endfor %}

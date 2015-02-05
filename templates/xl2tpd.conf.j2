@@ -1,0 +1,12 @@
+[global]
+ipsec saref = yes
+
+[lns default]
+ip range = {{ openswan_vpn_range }}
+local ip = {{ openswan_vpn_gateway }}
+refuse chap = yes
+refuse pap = yes
+require authentication = yes
+ppp debug = {{openswan_ppp_debug }}
+pppoptfile = /etc/ppp/options.xl2tpd
+length bit = yes

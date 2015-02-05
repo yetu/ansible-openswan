@@ -1,0 +1,12 @@
+---
+
+- name: install | Install required packages with apt
+  apt:
+    name="{{item}}"
+    state="latest"
+  with_items:
+    - openswan
+    - xl2tpd
+    - ppp
+    - lsof
+    - iptables

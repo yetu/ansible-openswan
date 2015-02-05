@@ -1,0 +1,68 @@
+config setup
+    interfaces=%defaultroute
+    nat_traversal={{ openswan_nat_traversal }}
+    virtual_private={% for range in openswan_virtual_private -%}
+%v{{ range.v}}:{{ range.network }}{{ ',' if loop.index < openswan_virtual_private | length else "" }}{%- endfor %}
+
+
+conn %default
+    keyingtries=1
+    compress=yes
+    disablearrivalcheck=no
+    authby=rsasig
+    leftrsasigkey=%cert
+    rightrsasigkey=%cert
+
+conn roadwarrior-net
+    leftsubnet=(your_subnet)/(your_netmask)
+    also=roadwarrior
+
+conn roadwarrior-all
+    leftsubnet=0.0.0.0/0
+    also=roadwarrior
+
+conn roadwarrior
+    left=%defaultroute
+    leftcert={{ openswan_left_cert_file }}
+    right=%any
+    rightsubnet=vhost:%no,%priv
+    auto=add
+    pfs=yes
+
+conn roadwarrior-l2tp
+    type=transport
+    left=%defaultroute
+    leftcert={{ openswan_left_cert_file }}
+    leftprotoport=17/1701
+    right=%any
+    rightprotoport=17/1701
+    pfs=no
+    auto=add
+
+conn roadwarrior-l2tp-oldwin
+    left=%defaultroute
+    leftcert={{ openswan_left_cert_file }}
+    leftprotoport=17/0
+    right=%any
+    rightprotoport=17/1701
+    rightsubnet=vhost:%no,%priv
+    pfs=no
+    auto=add
+
+conn block
+    auto=ignore
+
+conn private
+    auto=ignore
+
+conn private-or-clear
+    auto=ignore
+
+conn clear-or-private
+    auto=ignore
+
+conn clear
+    auto=ignore
+
+conn packetdefault
+    auto=ignore

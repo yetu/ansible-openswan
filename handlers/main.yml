@@ -1,0 +1,11 @@
+- name: restart openswan
+  service:
+    name=ipsec
+    state=restarted
+    pattern=ipsec
+
+- name: restart xl2tpd
+  service:
+    name=xl2tpd
+    state=restarted
+    pattern=xl2tpd

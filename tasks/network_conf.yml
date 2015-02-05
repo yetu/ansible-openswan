@@ -1,0 +1,62 @@
+## Might need to put in boot scropt
+#for vpn in /proc/sys/net/ipv4/conf/*
+# do
+#    echo 0 > $vpn/accept_redirects
+#    echo 0 > $vpn/send_redirects
+#done
+#iptables --table nat --append POSTROUTING --jump MASQUERADE
+
+- name: network_conf | Check IP tables
+  command: iptables -L -t nat
+  register: iptables
+  changed_when: false
+  tags: ipt
+#- name: Enable SNAT on public interface
+#  command: "iptables -t nat -I POSTROUTING -o {{ openswan_public_address }} -j SNAT --to {{ openswan_private_address }}"
+#  #not_if "iptables -L -t nat | grep #{node[:openswan][:public_ip]}"
+#
+#- name: Enable SNAT on private interface
+#  command: "iptables -t nat -I POSTROUTING -o {{ openswan_private_address }} -j SNAT --to {{ openswan_vpn_gateway }}"
+
+- name: network_conf | Set IPtables routing rule
+  command: /sbin/iptables --table nat --append POSTROUTING --jump MASQUERADE
+  when: "not iptables.stdout.find('MASQUERADE  all')"
+
+- name: network_conf | Get ipv4 interfaces
+  command: ls /proc/sys/net/ipv4/conf/
+  register: ipv4_interfaces
+  changed_when: false
+
+- name: network | Disable Redirect
+  file:
+    content=0
+    dest='/proc/sys/net/ipv4/conf/{{ item.0 }}/{{ item.1 }}'
+  with_nested:
+   - ipv4_interfaces.stdout_lines
+   - [ 'accept_redirects',  'send_redirects' ]
+  notify: restart xl2tpd
+
+#echo 0 > /proc/sys/net/ipv4/ip_forward
+- name: network | set sysctl rule net.ipv4.ip_forward to 1
+  sysctl:
+    name=net.ipv4.ip_forward
+    value=1
+    state=present
+
+- name: network_conf | set sysctl rule net.ipv4.conf.all.accept_redirects to 0
+  sysctl:
+    name=net.ipv4.conf.all.accept_redirects
+    value=0
+    state=present
+
+- name: network_conf | set sysctl rule net.ipv4.conf.all.send_redirects to 0
+  sysctl:
+    name=net.ipv4.conf.all.send_redirects
+    value=0
+    state=present
+
+- name: network_conf | set sysctl rule net.ipv4.ip_forward to 1
+  sysctl:
+    name=net.ipv4.ip_forward
+    value=1
+    state=present

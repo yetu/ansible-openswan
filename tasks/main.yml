@@ -1,0 +1,17 @@
+---
+
+- include: install.yml
+
+- include: ip_rules.yml
+
+- include: network_conf.yml
+
+- include: user_secrets.yml
+
+- include: ppp_conf.yml
+
+- include: ipsec_conf.yml
+
+
+
+
